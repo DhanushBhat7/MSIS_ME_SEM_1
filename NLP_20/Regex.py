@@ -1,4 +1,4 @@
-import regex as re
+import  re
 
 # A regex is simply a pattern used to search, extract, validate, replace, or split text.
 
@@ -23,3 +23,7 @@ print(re.findall(r"\d+","Age 21, marks 95" )) #\d only digits, + : 1 or more tim
 print(re.findall(r"\w+","hello world_123"))  #\w for words, +: 1 or more times and words can contain any numbers or letters 
 
 print(re.findall(r"\s+","hello    world")) #\s+ for whitespaces 
+
+
+
+
