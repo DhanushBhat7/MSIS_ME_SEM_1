@@ -1,83 +1,44 @@
 class Node:
-    def __init__(self,value):
-       self.value=value 
-       self.next=None
+    def __init__(self, customer_id):
+        self.customer_id = customer_id
+        self.counter = None
+        self.next = None
 
-class Linked_list:
+
+class queuesll:
     def __init__(self):
         self.head = None
-        self.count = 1
+        self.tail = None
 
-    def middle(self):
-        middle= self.head
-        current=self.head
+    def add_customer(self, customer_id):
+        new_node = Node(customer_id)
+        if customer_id % 2 == 1:
+            new_node.counter = "Store A"
+        else:
+            new_node.counter = "Store B"
 
-        while current.next is not None:
-            middle = middle.next
-            current= current.next.next
-        return middle
-
-    def insertend(self,value):
-        new_node = Node(value)
         if self.head is None:
             self.head = new_node
-            return
-        if self.count > 10:
-            middle_node = self.middle()
-            print(f"the middle node is: {middle_node.value}")
-        current=self.head
-        while current.next:
-            current=current.next
-
-        current.next= new_node
-        self.count+=1
+            self.tail = new_node
+        else:
+            self.tail.next = new_node
+            self.tail = new_node
 
     
-        
-
     def display(self):
-        if self.count>10:
-            store1 = []
-            store2 = []
-            middle_node = self.middle()
-            current=self.head
-            while current:
-                for i in range(middle_node):
-                    store1.append(current.value)
-        print(" -> ".join(store1) + " -> None")
-                
+        current = self.head
+        while current is not None:
 
-        
-        store1=[]
-        
-        current=self.head
-        while current:
-            
-            store1.append(str(current.value))
-            current=current.next
+            print(
+                f"Customer {current.customer_id} "
+                f"-> {current.counter}"
+            )
 
-        print(" -> ".join(store1) + " -> None")
-        print(self.count)
+            current = current.next
 
+queue = queuesll()
+n = 10
+for i in range(1, n + 1):
+    queue.add_customer(i)
 
-
-
-stlist=Linked_list()
-
-
-
-stlist.insertend(10)
-stlist.insertend(20)
-stlist.insertend(30)
-stlist.insertend(40)
-stlist.insertend(50)
-stlist.insertend(60)
-stlist.insertend(70)
-stlist.insertend(80)
-stlist.insertend(90)
-stlist.insertend(100)
-stlist.insertend(110)
-stlist.insertend(110)
-
-
-stlist.display()
+queue.display()
