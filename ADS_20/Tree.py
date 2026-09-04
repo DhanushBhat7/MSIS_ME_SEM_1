@@ -30,6 +30,9 @@ Apple = Tree("Apple")
 laptop.add_child(hp)
 laptop.add_child(dell)
 
+pavillion = Tree("Pavillion")
+hp.add_child(pavillion)
+
 Mobile.add_child(Samsung)
 Mobile.add_child(Apple)
 
