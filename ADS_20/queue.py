@@ -22,21 +22,21 @@ class queue:
         return print("the elements in the queue are: ", self.queue)
 
 
-my_queue = queue()
+# my_queue = queue()
 
-my_queue.push(10)
-my_queue.push(20)
-my_queue.push(30)
-my_queue.push(40)
+# my_queue.push(10)
+# my_queue.push(20)
+# my_queue.push(30)
+# my_queue.push(40)
 
-my_queue.pop()
-my_queue.push(50)
+# my_queue.pop()
+# my_queue.push(50)
 
-my_queue.pop()
-my_queue.pop()
-my_queue.pop()
-my_queue.pop()
+# my_queue.pop()
+# my_queue.pop()
+# my_queue.pop()
+# my_queue.pop()
 
-my_queue.pop()    #index-error
+# my_queue.pop()    #index-error
 
-my_queue.display()
+# my_queue.display()

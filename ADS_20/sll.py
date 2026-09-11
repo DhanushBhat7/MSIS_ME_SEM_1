@@ -85,18 +85,18 @@ class LinkedList:
             
 
 
-ll=LinkedList()
+# ll=LinkedList()
 
-ll.insert(10)
-ll.insertend(20)
-ll.insertend(30)
-ll.insertend(40)
-ll.insertend(50)
-ll.insertmid(15,1)
-ll.display()
-ll.delete()
-ll.deletemid(2)
-ll.deleteend()
-ll.display()
+# ll.insert(10)
+# ll.insertend(20)
+# ll.insertend(30)
+# ll.insertend(40)
+# ll.insertend(50)
+# ll.insertmid(15,1)
+# ll.display()
+# ll.delete()
+# ll.deletemid(2)
+# ll.deleteend()
+# ll.display()
 
-ll.search(40)
+# ll.search(40)
