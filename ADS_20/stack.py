@@ -25,28 +25,28 @@ class Stack:
     def display(self):
         return print("The elements in the stack are :",self.stack)
 
-# my_stack = Stack()
+my_stack = Stack()
 
-# my_stack.append(10)
-# my_stack.append(20)
-# my_stack.append(30)
-# my_stack.append(40)
+my_stack.append(10)
+my_stack.append(20)
+my_stack.append(30)
+my_stack.append(40)
 
-# print(f"The top of the stack is: {my_stack.top()} ")
+print(f"The top of the stack is: {my_stack.top()} ")
 
-# my_stack.display()
+my_stack.display()
 
-# my_stack.pop()
-# my_stack.pop()
+my_stack.pop()
+my_stack.pop()
 
-# my_stack.display()
+my_stack.display()
 
-# my_stack.pop()
-# my_stack.append(50)
+my_stack.pop()
+my_stack.append(50)
 
-# my_stack.display()
-# print("The length of the stack is: ",my_stack.size())
+my_stack.display()
+print("The length of the stack is: ",my_stack.size())
 
-# my_stack.pop()
-# my_stack.pop()
+my_stack.pop()
+my_stack.pop()
 
