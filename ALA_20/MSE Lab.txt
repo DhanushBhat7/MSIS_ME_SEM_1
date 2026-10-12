@@ -1,0 +1,172 @@
+Py code for the q1,q2,q3 in single file 
+
+
+import numpy as np
+import unittest
+
+
+# ---------------- QUESTION 1 ----------------
+
+def make_D(n):
+    """Create an n x (n-1) difference matrix.
+
+    Args:
+        n: Number of rows.
+    Returns:
+        Difference matrix.
+    """
+    D = np.zeros((n, n-1), dtype=np.float64)
+
+    for i in range(n-1):
+        D[i, i] = -1
+        D[i+1, i] = 1
+
+    return D
+
+
+def subvector(x, i, j):
+    """Return subvector using 1-based inclusive indices.
+
+    Args:
+        x: Input vector.
+        i: Starting index.
+        j: Ending index.
+    Returns:
+        Selected subvector.
+    """
+    return x[i-1:j]
+
+
+# ---------------- QUESTION 2 ----------------
+
+def token_difference():
+    """Calculate D transpose times token embeddings.
+
+    Returns:
+        Matrix of shape (5, 768).
+    """
+    rng = np.random.default_rng(0)
+    X = rng.standard_normal((6, 768)).astype(np.float64)
+
+    D = make_D(6)
+    return D.T @ X
+
+
+# ---------------- QUESTION 3 ----------------
+
+def layer_norm(e, gamma, beta, eps=1e-5):
+    """Perform layer normalization.
+
+    Args:
+        e: Input activation vector.
+        gamma: Scale vector.
+        beta: Offset vector.
+        eps: Stability constant.
+    Returns:
+        Normalized activation vector.
+    """
+    m = np.sum(e) / len(e)
+    v = np.sum((e - m) ** 2) / len(e)
+
+    e_norm = (e - m) / np.sqrt(v + eps)
+
+    return e_norm * gamma + beta
+
+
+# ---------------- UNIT TESTS ----------------
+
+class TestQuestion1(unittest.TestCase):
+
+    def test_matrix_shape(self):
+        self.assertEqual(make_D(6).shape, (6, 5))
+
+    def test_matrix_product(self):
+        x = np.array([1, 4, 9, 16, 25, 36],
+                     dtype=np.float64)
+
+        expected = np.array([3, 5, 7, 9, 11],
+                            dtype=np.float64)
+
+        np.testing.assert_allclose(x @ make_D(6), expected)
+
+    def test_subvector(self):
+        x = np.array([1, 4, 9, 16, 25, 36],
+                     dtype=np.float64)
+
+        expected = np.array([4, 9, 16, 25],
+                            dtype=np.float64)
+
+        np.testing.assert_allclose(subvector(x, 2, 5),
+                                   expected)
+
+    def test_difference(self):
+        x = np.array([1, 4, 9, 16, 25, 36],
+                     dtype=np.float64)
+
+        d = subvector(x, 2, 6) - subvector(x, 1, 5)
+
+        np.testing.assert_allclose(d, x @ make_D(6))
+
+
+class TestQuestion2(unittest.TestCase):
+
+    def test_shape(self):
+        self.assertEqual(token_difference().shape, (5, 768))
+
+    def test_values(self):
+        rng = np.random.default_rng(0)
+        X = rng.standard_normal((6, 768)).astype(np.float64)
+
+        expected = make_D(6).T @ X
+
+        np.testing.assert_allclose(token_difference(), expected)
+
+
+class TestQuestion3(unittest.TestCase):
+
+    def test_reference(self):
+        rng = np.random.default_rng(0)
+        e = rng.standard_normal(768).astype(np.float64)
+
+        gamma = np.ones(768, dtype=np.float64)
+        beta = np.zeros(768, dtype=np.float64)
+        eps = 1e-5
+
+        actual = layer_norm(e, gamma, beta, eps)
+
+        m = np.mean(e)
+        v = np.var(e)
+
+        expected = (e - m) / np.sqrt(v + eps)
+        expected = expected * gamma + beta
+
+        np.testing.assert_allclose(
+            actual, expected, rtol=1e-10, atol=1e-10
+        )
+
+    def test_mean_and_variance(self):
+        rng = np.random.default_rng(0)
+        e = rng.standard_normal(768).astype(np.float64)
+
+        gamma = np.ones(768, dtype=np.float64)
+        beta = np.zeros(768, dtype=np.float64)
+        eps = 1e-5
+
+        actual = layer_norm(e, gamma, beta, eps)
+
+        m = np.sum(e) / len(e)
+        v = np.sum((e - m) ** 2) / len(e)
+
+        self.assertAlmostEqual(np.mean(actual), 0.0, places=8)
+
+        expected_var = v / (v + eps)
+
+        self.assertAlmostEqual(
+            np.var(actual), expected_var, places=8
+        )
+
+
+# ---------------- RUN ALL TESTS ----------------
+
+if __name__ == "__main__":
+    unittest.main()
