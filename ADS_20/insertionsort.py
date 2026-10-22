@@ -12,6 +12,6 @@ def insertionsort(a):
     return a
 
 
-list=[65,32,28,9,10,2,33]
-print(list)
-sorted = insertionsort(list)
+# list=[65,32,28,9,10,2,33]
+# print(list)
+# sorted = insertionsort(list)

@@ -10,9 +10,9 @@ def selectionsort(a):
         print(a)
     return a
 
-list=[65,32,28,9,10,2,33]
-print(list)
-sorted = selectionsort(list)
+# list=[65,32,28,9,10,2,33]
+# print(list)
+# sorted = selectionsort(list)
 
 
 

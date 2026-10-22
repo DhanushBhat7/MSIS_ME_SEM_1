@@ -10,6 +10,6 @@ def Bubblesort(a):
             break
     return a
 
-list = [3,2,4,5,2,1]
-sorted = Bubblesort(list)
-print(sorted)
+# list = [3,2,4,5,2,1]
+# sorted = Bubblesort(list)
+# print(sorted)
