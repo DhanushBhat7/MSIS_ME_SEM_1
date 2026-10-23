@@ -1,0 +1,1716 @@
+Python Data Structures Exam Guide
+Oct 22, 2026 · @SHivu
+Learn about 10 patterns, not 40 programs: almost every application question is two of these patterns glued together. All code below was run and tested in Python 3.
+Tonight's study plan
+Give linked lists the most time (the whole assignment is linked lists), then BST and sorting, and end with combo practice instead of more reading.
+Time
+
+Topic
+
+What to do
+
+6:00–7:45 pm
+
+Linked lists
+
+Write SLL operations from memory; learn what changes in doubly and circular; then assignment Q2–Q10 grouped by pattern
+
+7:45–8:30 pm
+
+Stack and queue
+
+List version, linked-list version, circular queue, queue using two stacks, bracket matching
+
+8:30–9:00 pm
+
+Break
+
+Away from the screen
+
+9:00–10:00 pm
+
+BST
+
+Insert 50, 30, 70, 20, 40, 60, 80 on paper; delete a leaf, a one-child node, the root
+
+10:00–11:00 pm
+
+Sorting and searching
+
+Trace every sort on [5, 2, 4, 1, 3]; binary search for 7 and 8 in [1, 3, 5, 7, 9, 11]
+
+11:00–11:45 pm
+
+Combo practice
+
+Do 4 combo questions without looking, then check
+
+Exam morning
+
+Revision (30 min)
+
+Morning cheat sheet + complexity table only; no new topics
+
+The method for each topic (this is what makes it stick):
+1. Read the idea (two lines), then close the doc and write the code on paper.
+2. Dry-run it on a 4–5 element example. For lists and trees, draw boxes and arrows and move your pen like the pointer.
+3. Check five edge cases: empty, one element, at the head, at the tail, key not found. Most lost marks are here.
+4. Say the time and space complexity aloud, with the reason ("one loop over n nodes, so O(n)").
+5. Only now compare with the code here. Mark your mistakes and redo only those in the morning.
+How application questions are built: what is given is the data structure, what is asked is the algorithm. "Sort a linked list" = linked list + merge sort. "Kth smallest in a BST" = BST + inorder traversal. "Check palindrome" = linked list + stack (or two pointers). Name both halves before you write code.
+Note: your list said "deletion" sort; this guide assumes you meant selection sort, which is the standard one in that set.
+Pattern finder
+Read the question, spot the trigger words, pick the pattern. These ten patterns cover every assignment question and most application questions.
+If the question says…
+
+Use this pattern
+
+Example
+
+middle, nth from end, last n, cycle, loop
+
+Two pointers (slow/fast, or a fixed gap)
+
+Q3, Q8, Q10
+
+reverse, undo, palindrome (easy way), brackets
+
+Stack (LIFO flips order)
+
+Q6, balanced brackets
+
+order of arrival, level by level, BFS, scheduling
+
+Queue (FIFO keeps order)
+
+Level-order traversal
+
+build a new list, merge, split
+
+Dummy node + tail pointer
+
+Q2, Q5, merge two lists
+
+common, duplicate, "seen before" (unsorted)
+
+Set (O(1) lookup)
+
+Q2, Q7
+
+common, merge, union of two sorted inputs
+
+Merge-style two pointers
+
+Sorted Q2, merge sort
+
+sorted output from a tree, kth smallest
+
+Inorder traversal (L → N → R)
+
+Kth smallest in BST
+
+sorted array + find / count / first position
+
+Binary search
+
+Count occurrences
+
+sort a linked list
+
+Merge sort (no index access needed)
+
+Merge sort a linked list
+
+kth largest / smallest, top k
+
+Heap or partition (quickselect)
+
+Kth smallest in an array
+
+Why merge sort for linked lists? Quick sort and heap sort need a[i] jumps; a linked list has none. Merge sort only walks forward, which lists do well. Bubble and insertion also work on lists by walking forward.
+Linked lists
+A linked list is a chain of boxes; each box holds data and an arrow to the next box. You only hold the first box (head), so reaching anything means walking from the head.
+Singly:    head -> [1|*] -> [2|*] -> [3|None]
+Doubly:    None <- [1] <-> [2] <-> [3] -> None      (head and tail)
+Circular:  head -> [1] -> [2] -> [3] --+
+                   ^-------------------+           (last.next is head)
+Three rules that solve most bugs:
+• To change a node, stop at the node before it (while cur.next ...).
+• When inserting, connect the new node first, then break the old link: n.next = cur.next then cur.next = n. Swap these two lines and you lose the rest of the list.
+• To delete, skip it: cur.next = cur.next.next.
+Singly linked list (this is also assignment Q1)
+class Node:
+   def __init__(self, data):
+       self.data = data
+       self.next = None
+
+class SLL:
+   def __init__(self):
+       self.head = None
+
+   def add_head(self, data):            # O(1)
+       n = Node(data)
+       n.next = self.head
+       self.head = n
+
+   def add_tail(self, data):            # O(n)  (O(1) if you keep a tail pointer)
+       n = Node(data)
+       if self.head is None:
+           self.head = n
+           return
+       cur = self.head
+       while cur.next:                  # stop AT the last node
+           cur = cur.next
+       cur.next = n
+
+   def delete_head(self):               # O(1)
+       if self.head is None:
+           return None
+       val = self.head.data
+       self.head = self.head.next
+       return val
+
+   def delete_tail(self):               # O(n) - need the second-last node
+       if self.head is None:
+           return None
+       if self.head.next is None:       # only one node
+           val = self.head.data
+           self.head = None
+           return val
+       cur = self.head
+       while cur.next.next:             # stop at SECOND-last node
+           cur = cur.next
+       val = cur.next.data
+       cur.next = None
+       return val
+
+   def search(self, key):               # O(n) - returns the node (or None)
+       cur = self.head
+       while cur:
+           if cur.data == key:
+               return cur
+           cur = cur.next
+       return None
+
+   def add_after(self, key, data):      # O(n) to find, O(1) to link
+       cur = self.search(key)
+       if cur is None:
+           return False
+       n = Node(data)
+       n.next = cur.next                # 1. new node points to the rest
+       cur.next = n                     # 2. old node points to new node
+       return True
+
+   def delete_after(self, key):         # O(n)
+       cur = self.search(key)
+       if cur is None or cur.next is None:
+           return None
+       val = cur.next.data
+       cur.next = cur.next.next         # skip it
+       return val
+
+   def to_list(self):                   # for printing / checking
+       out, cur = [], self.head
+       while cur:
+           out.append(cur.data)
+           cur = cur.next
+       return out
+Doubly linked list
+Each node also has prev, and the list keeps a tail. Payoff: delete at tail becomes O(1) and you can walk backwards. Cost: every insert or delete fixes two links per side, and you must update head/tail when the list becomes empty.
+class DNode:
+   def __init__(self, data):
+       self.data = data
+       self.prev = None
+       self.next = None
+
+class DLL:
+   def __init__(self):
+       self.head = None
+       self.tail = None
+
+   def add_head(self, data):            # O(1)
+       n = DNode(data)
+       if self.head is None:
+           self.head = self.tail = n
+           return
+       n.next = self.head
+       self.head.prev = n
+       self.head = n
+
+   def add_tail(self, data):            # O(1) thanks to tail
+       n = DNode(data)
+       if self.tail is None:
+           self.head = self.tail = n
+           return
+       n.prev = self.tail
+       self.tail.next = n
+       self.tail = n
+
+   def delete_head(self):               # O(1)
+       if self.head is None:
+           return None
+       val = self.head.data
+       self.head = self.head.next
+       if self.head:
+           self.head.prev = None
+       else:
+           self.tail = None             # list became empty
+       return val
+
+   def delete_tail(self):               # O(1) - big win over SLL
+       if self.tail is None:
+           return None
+       val = self.tail.data
+       self.tail = self.tail.prev
+       if self.tail:
+           self.tail.next = None
+       else:
+           self.head = None
+       return val
+
+   def add_after(self, key, data):      # O(n) to find
+       cur = self.head
+       while cur and cur.data != key:
+           cur = cur.next
+       if cur is None:
+           return False
+       n = DNode(data)
+       n.prev = cur
+       n.next = cur.next
+       if cur.next:
+           cur.next.prev = n
+       else:
+           self.tail = n                # inserted after the last node
+       cur.next = n
+       return True
+
+   def delete(self, key):               # O(n) to find, O(1) to unlink
+       cur = self.head
+       while cur and cur.data != key:
+           cur = cur.next
+       if cur is None:
+           return False
+       if cur.prev:
+           cur.prev.next = cur.next
+       else:
+           self.head = cur.next
+       if cur.next:
+           cur.next.prev = cur.prev
+       else:
+           self.tail = cur.prev
+       return True
+Circular singly linked list
+Same nodes as SLL, but the last node points back to head. There is no None to stop at, so every loop stops when it comes back to head. A one-node list points to itself.
+class CLL:
+   def __init__(self):
+       self.head = None
+
+   def _last(self):                     # O(n)
+       cur = self.head
+       while cur.next is not self.head:
+           cur = cur.next
+       return cur
+
+   def add_tail(self, data):            # O(n)
+       n = Node(data)
+       if self.head is None:
+           self.head = n
+           n.next = n                   # points to itself
+           return
+       last = self._last()
+       last.next = n
+       n.next = self.head
+
+   def add_head(self, data):            # O(n): last must point to new head
+       n = Node(data)
+       if self.head is None:
+           self.head = n
+           n.next = n
+           return
+       last = self._last()
+       n.next = self.head
+       last.next = n
+       self.head = n
+
+   def delete_head(self):               # O(n)
+       if self.head is None:
+           return None
+       val = self.head.data
+       if self.head.next is self.head:  # only one node
+           self.head = None
+           return val
+       last = self._last()
+       self.head = self.head.next
+       last.next = self.head
+       return val
+
+   def to_list(self):
+       out = []
+       if self.head is None:
+           return out
+       cur = self.head
+       while True:                      # do-while: visit head first
+           out.append(cur.data)
+           cur = cur.next
+           if cur is self.head:
+               break
+       return out
+Exam tip: if you keep a tail pointer instead of head in a circular list, tail.next is the head, and both add-at-head and add-at-tail become O(1).
+Operation
+
+Singly
+
+Doubly (head + tail)
+
+Circular (head only)
+
+Add at head
+
+O(1)
+
+O(1)
+
+O(n)
+
+Add at tail
+
+O(n)
+
+O(1)
+
+O(n)
+
+Delete head
+
+O(1)
+
+O(1)
+
+O(n)
+
+Delete tail
+
+O(n)
+
+O(1)
+
+O(n)
+
+Search / add after / delete by value
+
+O(n)
+
+O(n)
+
+O(n)
+
+Extra space per node
+
+1 pointer
+
+2 pointers
+
+1 pointer
+
+Stack and queue
+A stack is a pile of plates: last in, first out (LIFO). A queue is a ticket line: first in, first out (FIFO). Every operation should be O(1); the exam often tests whether you know which end to use to keep it O(1).
+Stack:  push 1,2,3  ->  [1, 2, 3] <- top     pop() gives 3
+Queue:  enqueue 1,2,3 -> front [1, 2, 3] rear  dequeue() gives 1
+Stack (Python list)
+class Stack:
+   def __init__(self):
+       self.items = []
+
+   def push(self, x):                   # O(1)
+       self.items.append(x)
+
+   def pop(self):                       # O(1)
+       if self.is_empty():
+           raise IndexError("stack underflow")
+       return self.items.pop()
+
+   def peek(self):                      # O(1)
+       if self.is_empty():
+           raise IndexError("stack is empty")
+       return self.items[-1]
+
+   def is_empty(self):
+       return len(self.items) == 0
+
+   def size(self):
+       return len(self.items)
+Stack using a linked list (combo favourite)
+Push = add at head, pop = delete head. Both O(1). Never use the tail of a singly list for a stack: delete-tail is O(n).
+class LinkedStack:
+   def __init__(self):
+       self.top = None
+
+   def push(self, x):                   # O(1)
+       n = Node(x)
+       n.next = self.top
+       self.top = n
+
+   def pop(self):                       # O(1)
+       if self.top is None:
+           raise IndexError("stack underflow")
+       val = self.top.data
+       self.top = self.top.next
+       return val
+Queue using a linked list
+Enqueue at the rear (add tail with a tail pointer), dequeue at the front (delete head). Both O(1). The classic bug: forgetting to set rear = None when the last item leaves.
+class LinkedQueue:
+   def __init__(self):
+       self.front = self.rear = None
+
+   def enqueue(self, x):                # O(1)
+       n = Node(x)
+       if self.rear is None:
+           self.front = self.rear = n
+       else:
+           self.rear.next = n
+           self.rear = n
+
+   def dequeue(self):                   # O(1)
+       if self.front is None:
+           raise IndexError("queue underflow")
+       val = self.front.data
+       self.front = self.front.next
+       if self.front is None:           # queue became empty
+           self.rear = None
+       return val
+
+   def is_empty(self):
+       return self.front is None
+Shortcut in real Python: from collections import deque, then q.append(x) and q.popleft(), both O(1). Avoid list.pop(0): it shifts every item, so it is O(n).
+Circular queue (fixed-size array)
+The rear wraps to index 0 when it passes the end, so freed slots get reused. The key line is % self.cap.
+class CircularQueue:
+   def __init__(self, k):
+       self.q = [None] * k
+       self.cap = k
+       self.front = 0
+       self.size = 0
+
+   def enqueue(self, x):                # O(1)
+       if self.size == self.cap:
+           raise OverflowError("queue full")
+       rear = (self.front + self.size) % self.cap
+       self.q[rear] = x
+       self.size += 1
+
+   def dequeue(self):                   # O(1)
+       if self.size == 0:
+           raise IndexError("queue empty")
+       x = self.q[self.front]
+       self.front = (self.front + 1) % self.cap
+       self.size -= 1
+       return x
+Queue using two stacks
+Push into inbox. To dequeue, pour inbox into outbox only when outbox is empty; pouring reverses the order, so the oldest item ends on top. Each item moves at most twice, so it is amortized O(1).
+class QueueTwoStacks:
+   def __init__(self):
+       self.inbox, self.outbox = [], []
+
+   def enqueue(self, x):
+       self.inbox.append(x)
+
+   def dequeue(self):
+       if not self.outbox:              # refill only when empty
+           while self.inbox:
+               self.outbox.append(self.inbox.pop())
+       if not self.outbox:
+           raise IndexError("queue empty")
+       return self.outbox.pop()
+Operation
+
+Stack (list / linked)
+
+Linked queue
+
+Circular queue
+
+Two-stack queue
+
+Insert
+
+O(1)
+
+O(1)
+
+O(1)
+
+O(1)
+
+Remove
+
+O(1)
+
+O(1)
+
+O(1)
+
+O(1) amortized, O(n) worst
+
+Peek
+
+O(1)
+
+O(1)
+
+O(1)
+
+O(1) amortized
+
+Space
+
+O(n)
+
+O(n)
+
+O(k) fixed
+
+O(n)
+
+Binary search tree (BST)
+One rule: smaller goes left, bigger goes right, at every node. That rule means each comparison throws away half the tree, like binary search. Every operation follows one path from root to leaf, so it costs O(h), where h is the height.
+Insert 50, 30, 70, 20, 40, 60, 80:
+
+           50
+         /    \
+       30      70
+      /  \    /  \
+    20   40  60   80
+
+Inorder   (L N R): 20 30 40 50 60 70 80   <- always SORTED
+Preorder  (N L R): 50 30 20 40 70 60 80   <- root first (copying a tree)
+Postorder (L R N): 20 40 30 60 80 70 50   <- root last (deleting a tree)
+Level order (queue): 50 30 70 20 40 60 80
+Delete has three cases (the most asked BST question):
+1. Leaf (delete 20): just remove it, return None to the parent.
+2. One child (delete 30 after 20 is gone): return the child to the parent; it takes the node's place.
+3. Two children (delete 50): copy the inorder successor (smallest key in the right subtree, here 60) into the node, then delete that successor from the right subtree. The successor never has a left child, so that second delete is case 1 or 2.
+Memory hook: "0 or 1 child: hand the parent the other child. 2 children: copy the successor, delete the successor."
+from collections import deque
+
+class TNode:
+   def __init__(self, key):
+       self.key = key
+       self.left = None
+       self.right = None
+
+class BST:
+   def __init__(self):
+       self.root = None
+
+   # ---- insert: O(h)
+   def insert(self, key):
+       self.root = self._insert(self.root, key)
+
+   def _insert(self, node, key):
+       if node is None:
+           return TNode(key)
+       if key < node.key:
+           node.left = self._insert(node.left, key)
+       elif key > node.key:
+           node.right = self._insert(node.right, key)
+       return node                      # duplicates are ignored
+
+   # ---- search: O(h)
+   def search(self, key):
+       cur = self.root
+       while cur:
+           if key == cur.key:
+               return True
+           cur = cur.left if key < cur.key else cur.right
+       return False
+
+   def find_min(self):                  # leftmost node
+       cur = self.root
+       while cur and cur.left:
+           cur = cur.left
+       return cur.key if cur else None
+
+   def find_max(self):                  # rightmost node
+       cur = self.root
+       while cur and cur.right:
+           cur = cur.right
+       return cur.key if cur else None
+
+   # ---- delete: O(h)
+   def delete(self, key):
+       self.root = self._delete(self.root, key)
+
+   def _delete(self, node, key):
+       if node is None:
+           return None
+       if key < node.key:
+           node.left = self._delete(node.left, key)
+       elif key > node.key:
+           node.right = self._delete(node.right, key)
+       else:
+           if node.left is None:        # case 1 (leaf) & case 2 (one child)
+               return node.right
+           if node.right is None:
+               return node.left
+           succ = node.right            # case 3: two children
+           while succ.left:             # inorder successor = min of right subtree
+               succ = succ.left
+           node.key = succ.key          # copy successor
+           node.right = self._delete(node.right, succ.key)  # delete successor
+       return node
+
+   # ---- traversals: O(n)
+   def inorder(self):                   # Left, Node, Right -> SORTED
+       out = []
+       def go(n):
+           if n:
+               go(n.left); out.append(n.key); go(n.right)
+       go(self.root)
+       return out
+
+   def preorder(self):                  # Node, Left, Right
+       out = []
+       def go(n):
+           if n:
+               out.append(n.key); go(n.left); go(n.right)
+       go(self.root)
+       return out
+
+   def postorder(self):                 # Left, Right, Node
+       out = []
+       def go(n):
+           if n:
+               go(n.left); go(n.right); out.append(n.key)
+       go(self.root)
+       return out
+
+   def level_order(self):               # BFS with a queue
+       out = []
+       if self.root is None:
+           return out
+       q = deque([self.root])
+       while q:
+           n = q.popleft()
+           out.append(n.key)
+           if n.left:
+               q.append(n.left)
+           if n.right:
+               q.append(n.right)
+       return out
+
+   def height(self, node="root"):       # edges on longest path; empty = -1
+       if node == "root":
+           node = self.root
+       if node is None:
+           return -1
+       return 1 + max(self.height(node.left), self.height(node.right))
+
+   def count_leaves(self, node="root"):
+       if node == "root":
+           node = self.root
+       if node is None:
+           return 0
+       if node.left is None and node.right is None:
+           return 1
+       return self.count_leaves(node.left) + self.count_leaves(node.right)
+Height convention varies: some teachers count nodes (a single node has height 1, empty tree 0). Check which your course uses and say it in your answer.
+Operation
+
+Balanced tree
+
+Skewed tree (sorted input)
+
+Space
+
+Search / insert / delete
+
+O(log n)
+
+O(n)
+
+O(h) recursion, O(1) iterative search
+
+Min / max
+
+O(log n)
+
+O(n)
+
+O(1)
+
+Any traversal
+
+O(n)
+
+O(n)
+
+O(h) recursion; level order O(width)
+
+Why O(n) worst case: inserting 1, 2, 3, 4, 5 in order makes every node a right child, so the "tree" is really a linked list of height n − 1.
+Sorting
+Three slow-but-simple sorts (O(n²)) and three fast ones (O(n log n)). Learn each with its one-line hook, then its trace on [5, 2, 4, 1, 3]; if you can reproduce the trace, you can reproduce the code.
+Bubble sort — "the biggest bubbles to the end each pass"
+Compare neighbours, swap if out of order. After pass i, the last i items are final. The swapped flag stops early on sorted input, which gives the O(n) best case.
+def bubble_sort(a):
+   n = len(a)
+   for i in range(n - 1):
+       swapped = False
+       for j in range(n - 1 - i):       # last i items already in place
+           if a[j] > a[j + 1]:
+               a[j], a[j + 1] = a[j + 1], a[j]
+               swapped = True
+       if not swapped:                  # no swaps -> already sorted
+           break
+   return a
+ 
+pass 1: [2, 4, 1, 3, 5]   5 bubbled to the end
+pass 2: [2, 1, 3, 4, 5]
+pass 3: [1, 2, 3, 4, 5]
+pass 4: no swaps -> stop
+Selection sort — "select the minimum, swap it to the front"
+Always n²/2 comparisons, even on sorted input, but only n − 1 swaps (useful when swaps are expensive). Not stable.
+def selection_sort(a):
+   n = len(a)
+   for i in range(n - 1):
+       m = i
+       for j in range(i + 1, n):
+           if a[j] < a[m]:
+               m = j
+       a[i], a[m] = a[m], a[i]
+   return a
+ 
+pass 1: [1, 2, 4, 5, 3]   min 1 swapped to index 0
+pass 2: [1, 2, 4, 5, 3]   2 already in place
+pass 3: [1, 2, 3, 5, 4]
+pass 4: [1, 2, 3, 4, 5]
+Insertion sort — "pick up a card, shift bigger cards right, drop it in the gap"
+The left part is always sorted. Best on nearly sorted data: O(n) when already sorted.
+def insertion_sort(a):
+   for i in range(1, len(a)):
+       key = a[i]
+       j = i - 1
+       while j >= 0 and a[j] > key:     # shift bigger ones right
+           a[j + 1] = a[j]
+           j -= 1
+       a[j + 1] = key                   # drop the card in the gap
+   return a
+ 
+key 2: [2, 5, 4, 1, 3]
+key 4: [2, 4, 5, 1, 3]
+key 1: [1, 2, 4, 5, 3]
+key 3: [1, 2, 3, 4, 5]
+Merge sort — "split in half, sort each half, zip them together"
+Divide and conquer. All the real work is in merge, which walks two sorted lists with two pointers. That merge function is reused in many combo questions (merge two sorted lists, common elements, sort a linked list).
+def merge(left, right):                  # merge two SORTED lists: O(n)
+   res = []
+   i = j = 0
+   while i < len(left) and j < len(right):
+       if left[i] <= right[j]:          # <= keeps it stable
+           res.append(left[i]); i += 1
+       else:
+           res.append(right[j]); j += 1
+   res.extend(left[i:])                 # leftovers
+   res.extend(right[j:])
+   return res
+
+def merge_sort(a):
+   if len(a) <= 1:
+       return a
+   mid = len(a) // 2
+   return merge(merge_sort(a[:mid]), merge_sort(a[mid:]))
+ 
+[5, 2, 4, 1, 3]
+split:  [5, 2]        [4, 1, 3]
+split:  [5] [2]       [4]  [1, 3]
+merge:  [2, 5]        [4]  [1, 3]
+merge:  [2, 5]        [1, 3, 4]
+merge:  [1, 2, 3, 4, 5]
+Quick sort — "pick a pivot, small to the left, big to the right, repeat on each side"
+partition puts the pivot (last element) in its final place and returns that index. Worst case O(n²) happens when the pivot is always the smallest or largest, for example on already sorted input with a last-element pivot.
+def partition(a, lo, hi):                # Lomuto: pivot = last element
+   pivot = a[hi]
+   i = lo - 1                           # end of the "small" zone
+   for j in range(lo, hi):
+       if a[j] <= pivot:
+           i += 1
+           a[i], a[j] = a[j], a[i]
+   a[i + 1], a[hi] = a[hi], a[i + 1]    # pivot to its final place
+   return i + 1
+
+def quick_sort(a, lo=0, hi=None):
+   if hi is None:
+       hi = len(a) - 1
+   if lo < hi:
+       p = partition(a, lo, hi)
+       quick_sort(a, lo, p - 1)
+       quick_sort(a, p + 1, hi)
+   return a
+ 
+partition [5, 2, 4, 1, 3], pivot 3  ->  [2, 1, 3, 5, 4], pivot at index 2
+then sort [2, 1] and [5, 4] the same way
+Easy-to-remember version (good for explaining the idea; uses O(n) extra space, so write the in-place one if the question says "in place"):
+def quick_sort_simple(a):
+   if len(a) <= 1:
+       return a
+   pivot, rest = a[0], a[1:]
+   return (quick_sort_simple([x for x in rest if x < pivot]) + [pivot] +
+           quick_sort_simple([x for x in rest if x >= pivot]))
+Heap sort — "build a max-heap, swap the root to the end, shrink, fix the root"
+An array as a tree: children of i are 2i+1 and 2i+2, parent is (i-1)//2, last parent is n//2 - 1. heapify sinks a node until both children are smaller.
+def heapify(a, n, i):                    # sift node i down in a max-heap of size n
+   largest = i
+   l, r = 2 * i + 1, 2 * i + 2
+   if l < n and a[l] > a[largest]:
+       largest = l
+   if r < n and a[r] > a[largest]:
+       largest = r
+   if largest != i:
+       a[i], a[largest] = a[largest], a[i]
+       heapify(a, n, largest)
+
+def heap_sort(a):
+   n = len(a)
+   for i in range(n // 2 - 1, -1, -1):  # 1. build max-heap (last parent -> root)
+       heapify(a, n, i)
+   for end in range(n - 1, 0, -1):      # 2. move max to end, shrink, fix root
+       a[0], a[end] = a[end], a[0]
+       heapify(a, end, 0)
+   return a
+ 
+build max-heap: [5, 3, 4, 1, 2]
+swap 5 to end:  [4, 3, 2, 1 | 5]
+swap 4 to end:  [3, 1, 2 | 4, 5]
+swap 3 to end:  [2, 1 | 3, 4, 5]
+swap 2 to end:  [1 | 2, 3, 4, 5]
+Sort
+
+Best
+
+Average
+
+Worst
+
+Extra space
+
+Stable
+
+When to pick it
+
+Bubble
+
+O(n)
+
+O(n²)
+
+O(n²)
+
+O(1)
+
+Yes
+
+Teaching, tiny or nearly sorted data
+
+Selection
+
+O(n²)
+
+O(n²)
+
+O(n²)
+
+O(1)
+
+No
+
+Fewest swaps
+
+Insertion
+
+O(n)
+
+O(n²)
+
+O(n²)
+
+O(1)
+
+Yes
+
+Nearly sorted or small data
+
+Merge
+
+O(n log n)
+
+O(n log n)
+
+O(n log n)
+
+O(n)
+
+Yes
+
+Guaranteed speed, linked lists
+
+Quick
+
+O(n log n)
+
+O(n log n)
+
+O(n²)
+
+O(log n) stack
+
+No
+
+Fastest in practice on arrays
+
+Heap
+
+O(n log n)
+
+O(n log n)
+
+O(n log n)
+
+O(1)
+
+No
+
+Guaranteed speed with no extra memory
+
+Stable = equal items keep their original order. Asked "which sort for a linked list?" → merge sort. "Guaranteed n log n with O(1) space?" → heap sort.
+Searching
+Linear search checks every item and works on anything. Binary search halves the range each step but needs sorted data and index access (so not on a linked list).
+def linear_search(a, x):                 # O(n), works on unsorted data
+   for i in range(len(a)):
+       if a[i] == x:
+           return i
+   return -1
+
+def binary_search(a, x):                 # O(log n), a MUST be sorted
+   lo, hi = 0, len(a) - 1
+   while lo <= hi:
+       mid = (lo + hi) // 2
+       if a[mid] == x:
+           return mid
+       elif a[mid] < x:
+           lo = mid + 1                 # go right
+       else:
+           hi = mid - 1                 # go left
+   return -1
+
+def binary_search_rec(a, x, lo, hi):     # recursive version, O(log n) stack
+   if lo > hi:
+       return -1
+   mid = (lo + hi) // 2
+   if a[mid] == x:
+       return mid
+   if a[mid] < x:
+       return binary_search_rec(a, x, mid + 1, hi)
+   return binary_search_rec(a, x, lo, mid - 1)
+ 
+a = [1, 3, 5, 7, 9, 11]
+find 7: mid=2 (5<7, go right) -> mid=4 (9>7, go left) -> mid=3 (7) found at 3
+find 8: mid=2 -> mid=4 -> mid=3 (7<8, lo=4) -> lo > hi, return -1
+Three places students lose marks: while lo <= hi (not <), lo = mid + 1 and hi = mid - 1 (not mid, or it can loop forever), and forgetting that the input must be sorted.
+Variant: first and last occurrence (duplicates)
+On a hit, record it and keep searching left (first) or right (last). Count of x = last − first + 1, still O(log n).
+def first_occurrence(a, x):              # keep searching LEFT after a hit
+   lo, hi, ans = 0, len(a) - 1, -1
+   while lo <= hi:
+       mid = (lo + hi) // 2
+       if a[mid] == x:
+           ans = mid
+           hi = mid - 1
+       elif a[mid] < x:
+           lo = mid + 1
+       else:
+           hi = mid - 1
+   return ans
+
+def last_occurrence(a, x):               # keep searching RIGHT after a hit
+   lo, hi, ans = 0, len(a) - 1, -1
+   while lo <= hi:
+       mid = (lo + hi) // 2
+       if a[mid] == x:
+           ans = mid
+           lo = mid + 1
+       elif a[mid] < x:
+           lo = mid + 1
+       else:
+           hi = mid - 1
+   return ans
+Search
+
+Best
+
+Average / worst
+
+Space
+
+Needs
+
+Linear
+
+O(1)
+
+O(n)
+
+O(1)
+
+Nothing
+
+Binary (iterative)
+
+O(1)
+
+O(log n)
+
+O(1)
+
+Sorted array
+
+Binary (recursive)
+
+O(1)
+
+O(log n)
+
+O(log n) stack
+
+Sorted array
+
+Combo idea: unsorted data searched many times → sort once (O(n log n)), then each binary search is O(log n).
+Complexity in one glance
+You don't need to memorize complexities if you can derive them in ten seconds. Use these rules, then check against the summary below.
+Time rules:
+• One loop over n items → O(n). A loop inside a loop over n → O(n²).
+• The range halves each step (binary search, balanced BST) → O(log n).
+• Split in half, then O(n) work to combine (merge sort) → log n levels × n work = O(n log n).
+• Two pointers moving through a list once → still O(n), even with two pointers.
+• Amortized O(1): an occasional slow step paid for by many fast ones (two-stack queue, list append).
+Space rules:
+• Only a few variables or pointers → O(1).
+• A set, stack, or new list holding up to n items → O(n).
+• Recursion costs its depth in stack space: recursive binary search O(log n), BST recursion O(h), quick sort O(log n) average.
+One-glance summary for the morning:
+Structure / algorithm
+
+Time
+
+Space
+
+SLL add/delete head
+
+O(1)
+
+O(1)
+
+SLL add/delete tail, search
+
+O(n)
+
+O(1)
+
+DLL add/delete at either end
+
+O(1)
+
+O(1)
+
+Stack push/pop, queue enqueue/dequeue
+
+O(1)
+
+O(n) total
+
+BST search/insert/delete
+
+O(log n) balanced, O(n) skewed
+
+O(h)
+
+Tree traversal (any order)
+
+O(n)
+
+O(h)
+
+Bubble / insertion sort
+
+O(n) best, O(n²) worst
+
+O(1)
+
+Selection sort
+
+O(n²) always
+
+O(1)
+
+Merge sort
+
+O(n log n) always
+
+O(n)
+
+Quick sort
+
+O(n log n) average, O(n²) worst
+
+O(log n)
+
+Heap sort
+
+O(n log n) always
+
+O(1)
+
+Linear search
+
+O(n)
+
+O(1)
+
+Binary search
+
+O(log n)
+
+O(1) iterative
+
+Slow/fast pointer tricks (middle, cycle)
+
+O(n)
+
+O(1)
+
+Assignment answers (Q1–Q10)
+Each answer uses the Node and SLL classes from the linked lists section. For every one, learn the idea line first; the code follows from it.
+Q1. Singly linked list class
+The full SLL class in the linked lists section is the answer (add/delete at head and tail, add/delete after, search).
+Q2. Common elements of two lists
+Idea: put list 1's values in a set, walk list 2, keep values found in the set. Build the result with a dummy node + tail so each append is O(1).
+def common_elements(l1, l2):             # O(m + n) time, O(m) space
+   seen = set()
+   cur = l1.head
+   while cur:
+       seen.add(cur.data)
+       cur = cur.next
+   dummy = Node(None)                   # dummy-node trick for building lists
+   tail = dummy
+   cur = l2.head
+   while cur:
+       if cur.data in seen:
+           tail.next = Node(cur.data)
+           tail = tail.next
+       cur = cur.next
+   result = SLL()
+   result.head = dummy.next
+   return result
+If both lists are sorted (likely twist), use merge-style two pointers: O(m + n) time, O(1) extra.
+def common_sorted(l1, l2):
+   a, b = l1.head, l2.head
+   dummy = tail = Node(None)
+   while a and b:
+       if a.data == b.data:
+           tail.next = Node(a.data); tail = tail.next
+           a, b = a.next, b.next
+       elif a.data < b.data:
+           a = a.next
+       else:
+           b = b.next
+   result = SLL()
+   result.head = dummy.next
+   return result
+No-extra-space answer for unsorted lists: nested loops, O(m × n) time, O(1) space. Mention it as the trade-off.
+Q3. Sum of the last n nodes in one pass
+Idea: a sliding window. Add every node; once more than n nodes are inside, subtract the oldest using a lagging pointer.
+def sum_last_n(ll, n):                   # O(L) time, O(1) space
+   window = 0
+   count = 0
+   lag = ll.head
+   cur = ll.head
+   while cur:
+       window += cur.data
+       count += 1
+       if count > n:                    # window too big -> drop oldest
+           window -= lag.data
+           lag = lag.next
+       cur = cur.next
+   return window                        # if n > length, gives total sum
+ 
+[1, 2, 3, 4, 5], n = 3
+add 1, 2, 3        -> window = 6
+add 4, drop 1      -> window = 9
+add 5, drop 2      -> window = 12   answer: 3 + 4 + 5 = 12
+Q4. Reverse a singly linked list
+Idea: walk once and flip every arrow backwards. Hook: save, flip, step, step.
+def reverse(self):                       # method of SLL: O(n) time, O(1) space
+   prev, cur = None, self.head
+   while cur:
+       nxt = cur.next                   # save
+       cur.next = prev                  # flip
+       prev = cur                       # step prev
+       cur = nxt                        # step cur
+   self.head = prev
+
+def reverse_nodes(head):                 # standalone version, returns new head
+   prev = None
+   while head:
+       nxt = head.next
+       head.next = prev
+       prev = head
+       head = nxt
+   return prev
+ 
+start:   None   1 -> 2 -> 3 -> None
+step 1:  None <- 1    2 -> 3 -> None      (prev=1, cur=2)
+step 2:  None <- 1 <- 2    3 -> None      (prev=2, cur=3)
+step 3:  None <- 1 <- 2 <- 3              (prev=3, cur=None) -> head = 3
+Stack version (combo): push every value, then pop them back into the nodes. O(n) space, so the pointer version is better.
+Q5. Split into two lists of alternate nodes
+Idea: two dummy-node lists; send nodes to A, B, A, B… by flipping a flag. This reuses the original nodes, so the original list is consumed.
+def split_alternate(ll):                 # O(n) time, O(1) extra space
+   da, db = Node(None), Node(None)
+   ta, tb = da, db
+   cur = ll.head
+   turn_a = True
+   while cur:
+       if turn_a:
+           ta.next = cur; ta = cur
+       else:
+           tb.next = cur; tb = cur
+       turn_a = not turn_a
+       cur = cur.next
+   ta.next = None                       # cut the old links
+   tb.next = None
+   a, b = SLL(), SLL()
+   a.head, b.head = da.next, db.next
+   ll.head = None
+   return a, b
+[1, 2, 3, 4, 5] → [1, 3, 5] and [2, 4]. If the original must survive, create Node(cur.data) copies instead (O(n) extra space).
+Q6. Is the list a palindrome?
+Easy idea (stack): push all values; popping gives them in reverse; compare with a forward walk.
+def is_palindrome_stack(ll):             # O(n) time, O(n) space
+   stack = []
+   cur = ll.head
+   while cur:
+       stack.append(cur.data)
+       cur = cur.next
+   cur = ll.head
+   while cur:
+       if cur.data != stack.pop():      # stack gives values in reverse
+           return False
+       cur = cur.next
+   return True
+Best idea (O(1) space): find the middle with slow/fast pointers, reverse the second half, compare the halves, then reverse back. This combines Q8 + Q4.
+def is_palindrome(ll):                   # O(n) time, O(1) space
+   head = ll.head
+   if head is None or head.next is None:
+       return True
+   slow = fast = head                   # 1. find end of first half
+   while fast.next and fast.next.next:
+       slow = slow.next
+       fast = fast.next.next
+   second = reverse_nodes(slow.next)    # 2. reverse second half
+   p1, p2, ok = head, second, True
+   while p2:                            # 3. compare
+       if p1.data != p2.data:
+           ok = False
+           break
+       p1, p2 = p1.next, p2.next
+   slow.next = reverse_nodes(second)    # 4. restore the list
+   return ok
+Q7. Remove duplicates efficiently
+Unsorted list: remember what you've seen in a set; unlink a node if seen before. Keep prev so you can unlink.
+def remove_duplicates(ll):               # O(n) time, O(n) space
+   seen = set()
+   prev, cur = None, ll.head
+   while cur:
+       if cur.data in seen:
+           prev.next = cur.next         # unlink cur
+       else:
+           seen.add(cur.data)
+           prev = cur
+       cur = cur.next
+Sorted list: duplicates sit next to each other, so compare with the next node. No extra space.
+def remove_duplicates_sorted(ll):        # O(n) time, O(1) space
+   cur = ll.head
+   while cur and cur.next:
+       if cur.data == cur.next.data:
+           cur.next = cur.next.next     # don't move cur: may be more dups
+       else:
+           cur = cur.next
+[3, 1, 3, 2, 1, 3] → [3, 1, 2]. The no-extra-space unsorted answer is nested loops, O(n²).
+Q8. Middle element without iterating all elements
+Idea: tortoise and hare. Slow moves 1, fast moves 2; when fast hits the end, slow is in the middle. The loop runs only about n/2 times.
+def middle(ll):                          # O(n) time, O(1) space
+   slow = fast = ll.head
+   while fast and fast.next:
+       slow = slow.next                 # 1 step
+       fast = fast.next.next            # 2 steps
+   return slow.data if slow else None   # even length -> second middle
+[1, 2, 3, 4, 5] → 3. [1, 2, 3, 4] → 3 (second middle). For the first middle (2), loop on while fast.next and fast.next.next.
+Q9. Remove odd elements from a circular singly linked list
+Idea: check every node after the head and skip the odd ones; when the loop returns to the head, cur is the last node, so finally check the head itself and re-link last → new head. Checking the head last avoids breaking the loop's stop condition.
+def remove_odd_circular(cll):            # O(n) time, O(1) space
+   if cll.head is None:
+       return
+   cur = cll.head
+   while cur.next is not cll.head:      # 1. check every node AFTER head
+       if cur.next.data % 2 != 0:
+           cur.next = cur.next.next
+       else:
+           cur = cur.next
+   if cll.head.data % 2 != 0:           # 2. finally check head (cur = last now)
+       if cll.head.next is cll.head:    # head was the only node
+           cll.head = None
+       else:
+           cur.next = cll.head.next
+           cll.head = cll.head.next
+[1, 2, 3, 4, 5, 6] → [2, 4, 6], still circular. [1, 3, 5] → empty. This reads "odd elements" as odd values; if your teacher means odd positions, use a position counter instead of % 2 on the data.
+Q10. Does the list contain a cycle?
+Idea (Floyd): two runners on a track. If the track loops, the fast runner (2 steps) eventually laps the slow one (1 step). If there's no loop, fast reaches None.
+def has_cycle(head):                     # O(n) time, O(1) space
+   slow = fast = head
+   while fast and fast.next:
+       slow = slow.next
+       fast = fast.next.next
+       if slow is fast:                 # fast caught up inside a loop
+           return True
+   return False
+Bonus follow-up ("where does the cycle start?"): after they meet, move one pointer back to head and step both by 1; they meet at the start.
+def cycle_start(head):
+   slow = fast = head
+   while fast and fast.next:
+       slow = slow.next
+       fast = fast.next.next
+       if slow is fast:
+           slow = head                  # restart one pointer at head
+           while slow is not fast:
+               slow = slow.next
+               fast = fast.next
+           return slow
+   return None
+Simple alternative: store visited nodes in a set; a repeat means a cycle. O(n) space. Use is (same node), not == (same value).
+Combo practice (application questions)
+Try these on paper before reading the solutions. Each one is two topics you already know, glued together; the "key idea" column is your hint.
+#
+
+Question
+
+Topics combined
+
+Key idea
+
+C1
+
+Merge two sorted linked lists into one sorted list
+
+Merge step + linked list
+
+Dummy node, take the smaller head
+
+C2
+
+Sort a linked list in O(n log n)
+
+Merge sort + slow/fast + C1
+
+Split at middle, sort halves, merge
+
+C3
+
+Bubble sort a linked list
+
+Bubble sort + linked list
+
+Swap data, not nodes
+
+C4
+
+Insertion sort a linked list
+
+Insertion sort + sorted insert
+
+Insert each node into a new sorted list
+
+C5
+
+Bubble-sort two lists, then merge them
+
+Bubble + merge
+
+C3 on each list, then C1
+
+C6
+
+Build a balanced BST from a sorted array
+
+Binary search + BST
+
+Middle element becomes the root
+
+C7
+
+Kth smallest element in a BST
+
+BST + inorder + stack
+
+Inorder is sorted; stop at the kth
+
+C8
+
+Check if a binary tree is a valid BST
+
+BST rule + recursion
+
+Pass allowed (low, high) range down
+
+C9
+
+Balanced brackets ([]{})
+
+Stack
+
+Push openers, pop and match closers
+
+C10
+
+Reverse a queue
+
+Queue + stack
+
+Empty queue into stack, stack back into queue
+
+C11
+
+Count occurrences of x in a sorted array
+
+Binary search twice
+
+last − first + 1
+
+C12
+
+Kth smallest in an unsorted array
+
+Quick sort's partition
+
+Partition until pivot lands at k − 1
+
+C13
+
+Implement a stack using one queue
+
+Queue + stack
+
+Rotate after each push
+
+C14
+
+Josephus problem (every kth person out)
+
+Circular linked list
+
+Delete every kth node until one is left
+
+C1. Merge two sorted linked lists
+def merge_sorted_lists(a, b):            # O(m + n), O(1) extra
+   dummy = tail = Node(None)
+   while a and b:
+       if a.data <= b.data:
+           tail.next = a; a = a.next
+       else:
+           tail.next = b; b = b.next
+       tail = tail.next
+   tail.next = a or b                   # attach leftovers
+   return dummy.next
+C2. Merge sort a linked list
+Starting fast one node ahead makes slow stop at the first middle, so a 2-node list splits into 1 + 1 (otherwise it recurses forever).
+def merge_sort_ll(head):                 # O(n log n), O(log n) stack
+   if head is None or head.next is None:
+       return head
+   slow, fast = head, head.next         # fast starts 1 ahead -> first middle
+   while fast and fast.next:
+       slow = slow.next
+       fast = fast.next.next
+   right = slow.next
+   slow.next = None                     # cut into two halves
+   return merge_sorted_lists(merge_sort_ll(head), merge_sort_ll(right))
+C3. Bubble sort a linked list
+end marks where the sorted tail begins; each pass stops before it.
+def bubble_sort_ll(head):                # O(n^2), O(1)
+   if head is None:
+       return head
+   end = None                           # nodes from 'end' onward are sorted
+   swapped = True
+   while swapped:
+       swapped = False
+       cur = head
+       while cur.next is not end:
+           if cur.data > cur.next.data:
+               cur.data, cur.next.data = cur.next.data, cur.data
+               swapped = True
+           cur = cur.next
+       end = cur                        # biggest value is now at cur
+   return head
+C4. Insertion sort a linked list
+def insertion_sort_ll(head):             # O(n^2), O(1)
+   dummy = Node(None)
+   cur = head
+   while cur:
+       nxt = cur.next
+       p = dummy
+       while p.next and p.next.data < cur.data:
+           p = p.next                   # find the gap
+       cur.next = p.next                # insert after p
+       p.next = cur
+       cur = nxt
+   return dummy.next
+C5. Bubble-sort two lists, then merge
+head = merge_sorted_lists(bubble_sort_ll(l1.head), bubble_sort_ll(l2.head))
+Cost: O(m² + n²) for the two bubble sorts + O(m + n) for the merge. Good follow-up answer: "merge sort on the combined list would be O((m + n) log(m + n)), which is faster for large inputs."
+C6. Sorted array to a balanced BST
+def sorted_to_bst(a, lo, hi):            # O(n); call sorted_to_bst(a, 0, len(a)-1)
+   if lo > hi:
+       return None
+   mid = (lo + hi) // 2
+   node = TNode(a[mid])                 # middle becomes root
+   node.left = sorted_to_bst(a, lo, mid - 1)
+   node.right = sorted_to_bst(a, mid + 1, hi)
+   return node
+C7. Kth smallest in a BST (iterative inorder with a stack)
+def kth_smallest(root, k):               # O(h + k)
+   stack, cur = [], root
+   while stack or cur:
+       while cur:                       # go as far left as possible
+           stack.append(cur)
+           cur = cur.left
+       cur = stack.pop()
+       k -= 1
+       if k == 0:
+           return cur.key
+       cur = cur.right
+   return None
+C8. Is it a valid BST?
+Checking only left < node < right at each node is the classic wrong answer; a deep grandchild can break the rule. Pass the allowed range down instead.
+def is_bst(node, low=float("-inf"), high=float("inf")):
+   if node is None:
+       return True
+   if not (low < node.key < high):
+       return False
+   return is_bst(node.left, low, node.key) and is_bst(node.right, node.key, high)
+C9. Balanced brackets
+def is_balanced(s):                      # O(n), O(n)
+   pairs = {")": "(", "]": "[", "}": "{"}
+   st = []
+   for ch in s:
+       if ch in "([{":
+           st.append(ch)
+       elif ch in pairs:
+           if not st or st.pop() != pairs[ch]:
+               return False
+   return len(st) == 0
+C10. Reverse a queue using a stack
+def reverse_queue(q):                    # q is a deque; O(n), O(n)
+   st = []
+   while q:
+       st.append(q.popleft())
+   while st:
+       q.append(st.pop())
+   return q
+C11. Count occurrences in a sorted array
+def count_occurrences(a, x):             # O(log n); uses the Searching section
+   f = first_occurrence(a, x)
+   if f == -1:
+       return 0
+   return last_occurrence(a, x) - f + 1
+C12. Kth smallest in an unsorted array (quickselect)
+Reuses partition from quick sort, but only recurses into the side that holds index k − 1.
+def kth_smallest_array(a, k):            # average O(n), worst O(n^2)
+   a = a[:]
+   lo, hi, target = 0, len(a) - 1, k - 1
+   while lo <= hi:
+       p = partition(a, lo, hi)
+       if p == target:
+           return a[p]
+       if p < target:
+           lo = p + 1
+       else:
+           hi = p - 1
+   return None
+C13. Stack using one queue
+from collections import deque
+
+class StackUsingQueue:                   # push O(n), pop O(1)
+   def __init__(self):
+       self.q = deque()
+
+   def push(self, x):
+       self.q.append(x)
+       for _ in range(len(self.q) - 1): # rotate so x is at the front
+           self.q.append(self.q.popleft())
+
+   def pop(self):
+       return self.q.popleft()
+C14. Josephus problem (circular list)
+def josephus(n, k):                      # O(n * k); uses the CLL class
+   cll = CLL()
+   for i in range(1, n + 1):
+       cll.add_tail(i)
+   prev = cll._last()
+   cur = cll.head
+   while cur.next is not cur:           # until one person is left
+       for _ in range(k - 1):
+           prev, cur = cur, cur.next
+       prev.next = cur.next             # remove cur
+       cur = cur.next
+   return cur.data
+josephus(7, 3) → 4.
+Morning cheat sheet
+Read only this section on exam morning. If you can write each line below from memory, you can rebuild every program in this guide.
+# LINKED LIST
+n.next = cur.next; cur.next = n          # insert after cur (order matters!)
+cur.next = cur.next.next                 # delete after cur (skip it)
+while cur.next: cur = cur.next           # stop AT last node
+while cur.next.next: cur = cur.next      # stop at SECOND-last node
+nxt = cur.next; cur.next = prev; prev = cur; cur = nxt   # reverse: save, flip, step, step
+while fast and fast.next: slow = slow.next; fast = fast.next.next   # middle / cycle
+dummy = tail = Node(None)                # build a new list; answer is dummy.next
+while cur.next is not self.head:         # circular list stop condition
+cur.prev.next = cur.next; cur.next.prev = cur.prev    # DLL unlink (check None ends!)
+
+# STACK / QUEUE
+st.append(x); st.pop(); st[-1]           # push, pop, peek
+q.append(x); q.popleft()                 # deque queue, both O(1)
+rear = (front + size) % cap              # circular queue wrap
+
+# BST
+node.left if key < node.key else node.right   # smaller left, bigger right
+# inorder L-N-R = sorted;  delete with 2 children = copy successor, delete successor
+
+# SORTING
+a[j], a[j+1] = a[j+1], a[j]              # bubble swap; range(n-1-i); break if no swap
+while j >= 0 and a[j] > key: a[j+1] = a[j]; j -= 1   # insertion shift; then a[j+1] = key
+merge(merge_sort(a[:mid]), merge_sort(a[mid:]))      # merge sort in one line
+l, r = 2*i + 1, 2*i + 2                  # heap children; build from n//2 - 1 down to 0
+
+# BINARY SEARCH
+while lo <= hi: mid = (lo + hi) // 2     # lo = mid + 1 (go right), hi = mid - 1 (go left)
+Edge-case checklist (say these out loud for every answer; examiners award marks for them):
+• Empty structure (head is None, empty array, root is None)
+• Exactly one element (head is also the tail; circular node points to itself)
+• Operation at the head, and at the tail
+• Key not found (return None, -1 or False, never crash)
+• Duplicates, and n larger than the list length
+• After deleting the last item: reset tail / rear to None
+How to write each answer for full marks:
+1. One line: the approach and the pattern name ("two pointers, slow/fast").
+2. The code, with a comment on the tricky line.
+3. A short dry run on a 4–5 element example.
+4. Time and space complexity, with a one-phrase reason.
+5. One alternative and its trade-off ("a set would be O(n) space").
+All the code in this guide is also in the ds_exam.py file I sent alongside it; run python3 ds_exam.py to see 120+ checks pass, then change inputs and predict the output before running.
