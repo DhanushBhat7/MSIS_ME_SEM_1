@@ -1,102 +1,92 @@
 class Node:
     def __init__(self,data):
-        self.data = data
+        self.data=data
         self.left = None
-        self.right=None
+        self.right = None
 
 class BST:
     def __init__(self):
         self.root = None
 
-    def insert(self,data):
-        if self.root is None:
-            self.root = Node(data)
-        else:
-            self.insert_recursive(self.root,data)
+    def insert(self,root,data):
+        if root is None:
+            return Node(data) 
+        if data < root.data:
+            root.left = self.insert(root.left,data)
+        elif data > root.data:
+            root.right = self.insert(root.right,data)
 
-    def insert_recursive(self,current,data):
-        if data< current.data:
-            if current.left is None:
-                current.left = Node(data)
-            else:
-                self.insert_recursive(current.left,data)
-        elif data> current.data:
-            if current.right is None:
-                current.right = Node(data)
-            else:
-                self.insert_recursive(current.right,data)
+        return root
 
+    def display(self,root,level=0):
+        if root is not None:
+            self.display(root.right,level+1)
+            print("  " * level+str(root.data))
+            self.display(root.left,level+1)
 
     def inorder(self,root):
-        if root:
+        if root is not None:
             self.inorder(root.left)
-            print(root.data, end=" ")
-            self.inorder(root.right)
-        return
-
-    def postorder(self,root):
-        if root:
-            self.postorder(root.left)
-            self.postorder(root.right)
-            print(root.data,end= " ")
-        return
-    
-    def preorder(self,root):
-        if root:
             print(root.data,end =" ")
+            self.inorder(root.right)
+
+    def preorder(self,root):
+        if root is not None:
+            print(root.data, end=" ")
             self.preorder(root.left)
             self.preorder(root.right)
-        return
 
-    def print_2d_tree(self, root, space=0, height=5):
+    def postorder(self,root):
+        if root is not None:
+            self.postorder(root.left)
+            self.postorder(root.right)
+            print(root.data,end =" ")
+
+    def find_min(self,root):
+        while root.left is not None:
+            root = root.left
+        return root 
+
+    def delete(self,root,data):
         if root is None:
-            return
-        space += height
-        self.print_2d_tree(root.right, space, height)
-        print()
-        print('-- ' * (space - height) + str(root.data))
-        self.print_2d_tree(root.left, space, height)
+            return None
 
+        if data < root.data:
+            root.left = self.delete(root.left,data)
 
-Tree = BST()
-
-def main():
-    while True:
-    
-        print("\n========== BST MENU ==========")
-        print("1. Insert")
-        print("2. Inorder")
-        print("3. Preorder")
-        print("4. Postorder")
-        print("5. Display")
-
-        choice = int(input("Enter your choice: "))
-
-        if choice == 1:
-            value = input("Enter value: ")
-            Tree.insert(value)
-
-        elif choice == 2:
-            Tree.inorder(Tree.root)
-        elif choice == 3:
-            Tree.preorder(Tree.root)
-        elif choice == 4:
-            Tree.postorder(Tree.root)
-        elif choice == 5:
-            Tree.print_2d_tree(Tree.root)
+        elif data > root.data:
+            root.right = self.delete(root.right,data)
 
         else:
-            print("Invalid choice! Please try again.")
+            if root.left is None and root.right is None:
+                return None
 
-if __name__ == "__main__":
-    main()
+            elif root.left is None:
+                return root.right
+
+            elif root.right is None:
+                return root.left
+
+            temp = self.find_min(root.right)
+            root.data = temp.data
+            root.right = self.delete(root.right,temp.data)
+        return root 
 
 
-# print("The Inorder Traversal:")
-# Tree.inorder(Tree.root)
-# print("\nThe Postorder Traversal: ")
-# Tree.postorder(Tree.root)
-# print("\nThe Preorder Traversal:")
-# Tree.preorder(Tree.root)
+bst = BST()
 
-# Tree.print_2d_tree(Tree.root)   
+values = [50, 30, 70, 20, 40, 60, 80]
+
+for i in values:
+    bst.root = bst.insert(bst.root,i)
+
+bst.display(bst.root)
+
+bst.inorder(bst.root)
+bst.preorder(bst.root)
+bst.postorder(bst.root)
+
+
+bst.delete(bst.root,30)
+
+bst.display(bst.root)
